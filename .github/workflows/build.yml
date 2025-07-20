@@ -35,16 +35,18 @@ jobs:
 
       - name: 🧪 Compile Native EXE
         run: |
-          native-image -jar build/libs/*.jar -H:Name=MyApp
+          for %%f in (build\libs\*.jar) do (
+            native-image -jar %%f -H:Name=TestPlatformer
+          )
 
       - name: 📦 Upload JAR separately
         uses: actions/upload-artifact@v4
         with:
-          name: MyApp-JAR
+          name: TestPlatformer.jar
           path: build/libs/*.jar
 
       - name: 📦 Upload EXE separately
         uses: actions/upload-artifact@v4
         with:
-          name: MyApp-EXE
-          path: MyApp.exe
+          name: TestPlatformer.exe
+          path: TestPlatformer.exe
