@@ -75,11 +75,10 @@ public class Main extends ApplicationAdapter {
             xSpeed += 1f;
             xSpeed = MathUtils.clamp(xSpeed, -4, 4);
         } else if (xSpeed > 0) {
-            xSpeed -= .25f;
+            xSpeed -= .25f / ((float) tps/100);
         } else if (xSpeed < 0) {
-            xSpeed += .25f;
+            xSpeed += .25f / ((float) tps/100);
         }
-        plr.translateX(xSpeed * PHYSstep);
         ySpeed -= .5f / ((float) tps/100);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             if (!isJumping){
@@ -88,7 +87,7 @@ public class Main extends ApplicationAdapter {
                 ySpeed = MathUtils.clamp(ySpeed, -32, 32);
             }
         }
-        plr.translateY(ySpeed * PHYSstep);
+        plr.translate(xSpeed * PHYSstep, ySpeed * PHYSstep);
     }
 
     private void logic() {
