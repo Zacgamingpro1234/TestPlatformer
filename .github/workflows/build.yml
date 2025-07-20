@@ -2,7 +2,7 @@ name: Build JAR and Native EXE
 
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   build:
