@@ -1,0 +1,50 @@
+name: Build JAR and Native EXE
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💾 Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: ⚙️ Build JAR with Gradle
+        run: ./gradlew build -x test
+
+      - name: 🧪 Compile Native EXE
+        run: |
+          native-image -jar build/libs/*.jar -H:Name=MyApp
+
+      - name: 📦 Upload JAR separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-JAR
+          path: build/libs/*.jar
+
+      - name: 📦 Upload EXE separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-EXE
+          path: MyApp.exe
