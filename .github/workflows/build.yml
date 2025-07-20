@@ -3,6 +3,8 @@ name: Build JAR and Native EXE
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - '**/*.md'
 
 jobs:
   build:
