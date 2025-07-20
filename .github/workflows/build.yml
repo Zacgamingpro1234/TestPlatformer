@@ -41,7 +41,7 @@ jobs:
           $jarPath = Get-ChildItem -Path build\libs -Filter "TestPlatformer-*.jar" `
                      | Select-Object -ExpandProperty FullName
           Write-Host "Using JAR: $jarPath"
-          native-image -march=native -jar $jarPath -H:Name=TestPlatformer
+          ./gradlew :lwjgl3:nativeCompile -march=native -jar $jarPath -H:Name=TestPlatformer
 
       - name: 📦 Upload JAR separately
         uses: actions/upload-artifact@v4
