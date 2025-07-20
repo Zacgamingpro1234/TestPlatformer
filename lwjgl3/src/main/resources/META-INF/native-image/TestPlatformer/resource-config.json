@@ -1,0 +1,9 @@
+{
+  "resources":{
+  "includes":[
+    {
+      "pattern": ".*(\\Qassets.txt\\E|\\Qlibgdx.png\\E|\\Qsquare.png\\E|libgdx.+\\.png|lsans.+)"
+    }
+  ]},
+  "bundles":[]
+}
