@@ -12,14 +12,6 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🧰 Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '17'
-          distribution: 'graalvm'
-          components: 'native-image'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: 💾 Cache Gradle dependencies
         uses: actions/cache@v4
         with:
@@ -31,22 +23,34 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: ⚙️ Build JAR with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew :lwjgl3:build -x test
+
+      - name: 🧰 Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🧪 Compile Native EXE
         shell: pwsh
+        working-directory: lwjgl3
         run: |
-          $jarPath = Get-ChildItem -Path build/libs -Filter *.jar | Select-Object -ExpandProperty FullName
+          # find the generated JAR (e.g. TestPlatformer-1.0.0.jar)
+          $jarPath = Get-ChildItem -Path build\libs -Filter "TestPlatformer-*.jar" `
+                     | Select-Object -ExpandProperty FullName
+          Write-Host "Using JAR: $jarPath"
           native-image -jar $jarPath -H:Name=TestPlatformer
 
       - name: 📦 Upload JAR separately
         uses: actions/upload-artifact@v4
         with:
-          name: TestPlatformer.jar
-          path: build/libs/*.jar
+          name: TestPlatformer-JAR
+          path: lwjgl3/build/libs/TestPlatformer-*.jar
 
       - name: 📦 Upload EXE separately
         uses: actions/upload-artifact@v4
         with:
-          name: TestPlatformer.exe
+          name: TestPlatformer-EXE
           path: TestPlatformer.exe
