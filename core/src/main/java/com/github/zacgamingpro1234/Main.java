@@ -79,30 +79,26 @@ public class Main extends ApplicationAdapter {
             lastXinput = true;
         } else if (xSpeed > 0) {
             xSpeed -= .25f / ((float) tps/100);
+            if (xSpeed < 0) xSpeed = 0;
         } else if (xSpeed < 0) {
             xSpeed += .25f / ((float) tps/100);
+            if (xSpeed > 0) xSpeed = 0;
         }
 
         ySpeed -= .5f / ((float) tps/100);
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            if (!isJumping){
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && !isSliding){
+            ySpeed = -4f;
+            if (lastXinput){
+                xSpeed = 12f; // true = right
+            }else{
+                xSpeed = -12f; // false = left
+            }
+            isSliding = true;
+        } else if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && isJumping && !isSliding){
+            ySpeed = -1f;
+        } else if (Gdx.input.isKeyPressed(Input.Keys.W) && !isJumping) {
                 ySpeed = 12f;
                 isJumping = true;
-            }
-        } else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-            if (!isSliding){
-                ySpeed = -4f;
-                if (lastXinput){
-                    xSpeed = 12f; // true = right
-                }else{
-                    xSpeed = -12f; // false = left
-                }
-                isSliding = true;
-            }
-        } else if (Gdx.input.isKeyPressed(Input.Keys.SPACE)){
-            if (isJumping && !isSliding){
-                ySpeed = -1f;
-            }
         }
 
         xSpeed = MathUtils.clamp(xSpeed, -16, 16);
