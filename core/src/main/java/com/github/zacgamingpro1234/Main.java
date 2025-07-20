@@ -21,6 +21,9 @@ public class Main extends ApplicationAdapter {
     float xSpeed;
     float ySpeed;
     boolean isJumping;
+    boolean isSliding;
+    float slidetime;
+    boolean lastXinput; //false = left, true = right
     FitViewport viewport;
     public static float delta;
     static float timeaccum;
@@ -68,25 +71,42 @@ public class Main extends ApplicationAdapter {
 
     private void input() {
 
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && !(xSpeed <= -4)) {
             xSpeed -= 1f;
-            xSpeed = MathUtils.clamp(xSpeed, -4, 4);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            lastXinput = false;
+        } else if (Gdx.input.isKeyPressed(Input.Keys.D) && !(xSpeed >= 4)) {
             xSpeed += 1f;
-            xSpeed = MathUtils.clamp(xSpeed, -4, 4);
+            lastXinput = true;
         } else if (xSpeed > 0) {
             xSpeed -= .25f / ((float) tps/100);
         } else if (xSpeed < 0) {
             xSpeed += .25f / ((float) tps/100);
         }
+
         ySpeed -= .5f / ((float) tps/100);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             if (!isJumping){
                 ySpeed = 12f;
                 isJumping = true;
-                ySpeed = MathUtils.clamp(ySpeed, -32, 32);
+            }
+        } else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
+            if (!isSliding){
+                ySpeed = -4f;
+                if (lastXinput){
+                    xSpeed = 12f; // true = right
+                }else{
+                    xSpeed = -12f; // false = left
+                }
+                isSliding = true;
+            }
+        } else if (Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+            if (isJumping && !isSliding){
+                ySpeed = -1f;
             }
         }
+
+        xSpeed = MathUtils.clamp(xSpeed, -16, 16);
+        ySpeed = MathUtils.clamp(ySpeed, -32, 32);
         plr.translate(xSpeed * PHYSstep, ySpeed * PHYSstep);
     }
 
@@ -99,6 +119,13 @@ public class Main extends ApplicationAdapter {
         plr.setX(MathUtils.clamp(plr.getX(), 0, worldWidth - plr.getWidth()));
         if (plr.getY() < 0) {
             isJumping = false;
+        }
+        if (isSliding){
+            slidetime += delta;
+            if (slidetime >= 1){
+                isSliding = false;
+                slidetime = 0;
+            }
         }
         plr.setY(MathUtils.clamp(plr.getY(), 0, worldHeight - plr.getHeight()));
     }
