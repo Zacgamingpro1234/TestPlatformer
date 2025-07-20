@@ -41,7 +41,7 @@ jobs:
           $jarPath = Get-ChildItem -Path build\libs -Filter "TestPlatformer-*.jar" `
                      | Select-Object -ExpandProperty FullName
           Write-Host "Using JAR: $jarPath"
-          native-image -jar $jarPath -H:Name=TestPlatformer
+          native-image -march=native -jar $jarPath -H:Name=TestPlatformer
 
       - name: 📦 Upload JAR separately
         uses: actions/upload-artifact@v4
@@ -53,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TestPlatformer.exe
-          path: lwjgl3/build/native/nativeCompile/TestPlatformer.exe
+          path: lwjgl3\TestPlatformer.exe
