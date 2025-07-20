@@ -24,8 +24,9 @@ public class Main extends ApplicationAdapter {
     FitViewport viewport;
     public static float delta;
     static float timeaccum;
-    static float PHYSstep = .01f;
-    static int MAXsteps = 35;
+    static int tps = 100; // Change This Value To Change Physics Updates Per Second
+    static float PHYSstep = (float) 1/tps;
+    static int MAXsteps = (int) (((float) 25/100) * tps);
     static int totalSteps;
 
 
@@ -78,8 +79,8 @@ public class Main extends ApplicationAdapter {
         } else if (xSpeed < 0) {
             xSpeed += .25f;
         }
-        plr.translateX(xSpeed * .01f);
-        ySpeed -= .5f;
+        plr.translateX(xSpeed * PHYSstep);
+        ySpeed -= .5f / ((float) tps/100);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             if (!isJumping){
                 ySpeed = 12f;
@@ -87,7 +88,7 @@ public class Main extends ApplicationAdapter {
                 ySpeed = MathUtils.clamp(ySpeed, -32, 32);
             }
         }
-        plr.translateY(ySpeed * .01f);
+        plr.translateY(ySpeed * PHYSstep);
     }
 
     private void logic() {
