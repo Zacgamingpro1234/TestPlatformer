@@ -34,10 +34,10 @@ jobs:
         run: ./gradlew build -x test
 
       - name: 🧪 Compile Native EXE
+        shell: pwsh
         run: |
-          for %%f in (build\libs\*.jar) do (
-            native-image -jar %%f -H:Name=TestPlatformer
-          )
+          $jarPath = Get-ChildItem -Path build/libs -Filter *.jar | Select-Object -ExpandProperty FullName
+          native-image -jar $jarPath -H:Name=TestPlatformer
 
       - name: 📦 Upload JAR separately
         uses: actions/upload-artifact@v4
