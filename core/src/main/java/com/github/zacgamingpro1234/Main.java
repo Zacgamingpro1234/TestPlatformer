@@ -1,9 +1,6 @@
 package com.github.zacgamingpro1234;
 
-import com.badlogic.gdx.Application;
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -22,6 +19,7 @@ public class Main extends ApplicationAdapter {
     float ySpeed;
     boolean isJumping;
     boolean isSliding;
+    boolean isFullscreen;
     float slidetime;
     boolean lastXinput; //false = left, true = right
     FitViewport viewport;
@@ -70,7 +68,6 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
-
         if (Gdx.input.isKeyPressed(Input.Keys.A) && !(xSpeed <= -4)) {
             xSpeed -= 1f;
             lastXinput = false;
@@ -86,7 +83,7 @@ public class Main extends ApplicationAdapter {
         }
 
         ySpeed -= .5f / ((float) tps/100);
-        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && !isSliding){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT) && !isSliding){
             ySpeed = -4f;
             if (lastXinput){
                 xSpeed = 12f; // true = right
@@ -104,6 +101,17 @@ public class Main extends ApplicationAdapter {
         xSpeed = MathUtils.clamp(xSpeed, -16, 16);
         ySpeed = MathUtils.clamp(ySpeed, -32, 32);
         plr.translate(xSpeed * PHYSstep, ySpeed * PHYSstep);
+        if(Gdx.input.isKeyJustPressed(Input.Keys.F11)) {
+            Graphics.Monitor currMonitor = Gdx.graphics.getMonitor();
+            Graphics.DisplayMode displayMode = Gdx.graphics.getDisplayMode(currMonitor);
+            if (isFullscreen){
+                Gdx.graphics.setWindowedMode(1072, 603);
+            }else{
+                Gdx.graphics.setFullscreenMode(displayMode);
+            }
+            isFullscreen = !isFullscreen;
+        }
+
     }
 
     private void logic() {
