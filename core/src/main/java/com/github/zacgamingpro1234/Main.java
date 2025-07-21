@@ -13,6 +13,15 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
  * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms.
  */
 public class Main extends ApplicationAdapter {
+    // Settings
+    final static int tps = 100; // Physics Updates Per Second
+    final static float jumpPwr = 12f; // Jump Power
+    final static float maxwalkSpd = 4f; // Max Walk Speed (Not Affected By walkAccl)
+    final static float walkAccl = 1f; // How Fast The Player Accelerates
+    final static float friction = .25f; // Friction ig
+    final static float gravity = .5f; // Gravity ig
+    final static float slidePwr = 3f;
+
     private SpriteBatch batch;
     private Sprite plr;
     float xSpeed;
@@ -25,9 +34,9 @@ public class Main extends ApplicationAdapter {
     FitViewport viewport;
     public static float delta;
     static float timeaccum;
-    static int tps = 100; // Change This Value To Change Physics Updates Per Second
-    static float PHYSstep = (float) 1/tps;
-    static int MAXsteps = (int) (((float) 25/100) * tps);
+    final static float tpsMultiplier = (float) tps/100;
+    final static float PHYSstep = (float) 1/tps;
+    final static int MAXsteps = (int) (((float) 25/100) * tps);
     static int totalSteps;
 
 
@@ -49,7 +58,7 @@ public class Main extends ApplicationAdapter {
         delta = Gdx.graphics.getDeltaTime();
         timeaccum += delta;
         if (timeaccum > PHYSstep) {
-           totalSteps = (int) (timeaccum/ PHYSstep);
+           totalSteps = (int) (timeaccum/PHYSstep);
             if (totalSteps > MAXsteps) {
                 Gdx.app.log("Physhics Step", "Lag Spike Of " + totalSteps +
                     " Ticks, With Frame Time " + delta + "ms ");
@@ -68,38 +77,46 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && !(xSpeed <= -4)) {
-            xSpeed -= 1f;
-            lastXinput = false;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.D) && !(xSpeed >= 4)) {
-            xSpeed += 1f;
-            lastXinput = true;
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && !isSliding) {
+            if (!(xSpeed <= -4)){
+                xSpeed -= walkAccl / tpsMultiplier;
+                xSpeed = MathUtils.clamp(xSpeed, -maxwalkSpd, maxwalkSpd);
+                lastXinput = false;
+            }
+        } else if (Gdx.input.isKeyPressed(Input.Keys.D) && !isSliding){
+            if (!(xSpeed >= 4)){
+                xSpeed += walkAccl / tpsMultiplier;
+                xSpeed = MathUtils.clamp(xSpeed, -maxwalkSpd, maxwalkSpd);
+                lastXinput = true;
+            }
         } else if (xSpeed > 0) {
-            xSpeed -= .25f / ((float) tps/100);
+            xSpeed -= friction / tpsMultiplier;
             if (xSpeed < 0) xSpeed = 0;
         } else if (xSpeed < 0) {
-            xSpeed += .25f / ((float) tps/100);
+            xSpeed += friction / tpsMultiplier;
             if (xSpeed > 0) xSpeed = 0;
         }
 
-        ySpeed -= .5f / ((float) tps/100);
+        ySpeed -= gravity / tpsMultiplier;
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT) && !isSliding){
             ySpeed = -4f;
             if (lastXinput){
-                xSpeed = 12f; // true = right
+                xSpeed = slidePwr * xSpeed; // true = right
             }else{
-                xSpeed = -12f; // false = left
+                xSpeed = -slidePwr * -xSpeed; // false = left
             }
-            isSliding = true;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && isJumping && !isSliding){
+            if (xSpeed != 0f){
+                isSliding = true;
+            }
+        } else if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && isJumping && (!isSliding || slidetime >= .2f)) {
             ySpeed = -1f;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.W) && !isJumping) {
-                ySpeed = 12f;
+    } else if (Gdx.input.isKeyPressed(Input.Keys.W) && !isJumping) {
+                ySpeed = jumpPwr;
                 isJumping = true;
         }
 
-        xSpeed = MathUtils.clamp(xSpeed, -16, 16);
-        ySpeed = MathUtils.clamp(ySpeed, -32, 32);
+        xSpeed = MathUtils.clamp(xSpeed, -24, 24);
+        ySpeed = MathUtils.clamp(ySpeed, -48, 48);
         plr.translate(xSpeed * PHYSstep, ySpeed * PHYSstep);
         if(Gdx.input.isKeyJustPressed(Input.Keys.F11)) {
             Graphics.Monitor currMonitor = Gdx.graphics.getMonitor();
@@ -107,7 +124,9 @@ public class Main extends ApplicationAdapter {
             if (isFullscreen){
                 Gdx.graphics.setWindowedMode(1072, 603);
             }else{
-                Gdx.graphics.setFullscreenMode(displayMode);
+                if (!Gdx.graphics.setFullscreenMode(displayMode)){
+                    Gdx.app.error("Fullscreen", "Failed To Enter Fullscreen");
+                }
             }
             isFullscreen = !isFullscreen;
         }
@@ -126,7 +145,7 @@ public class Main extends ApplicationAdapter {
         }
         if (isSliding){
             slidetime += delta;
-            if (slidetime >= 1){
+            if (slidetime >= .42){
                 isSliding = false;
                 slidetime = 0;
             }
@@ -135,7 +154,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void draw() {
-        ScreenUtils.clear(Color.BLACK);
+        ScreenUtils.clear(new Color(.6f, .8f, 1f, 0));
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
